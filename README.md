@@ -15,7 +15,7 @@ datacomTest/
 
 - .NET 8.0 SDK
 - Node.js (for frontend development)
-- npm (Node Package Manager)
+- Yarn (Package Manager)
 
 ## Backend Setup
 
@@ -30,6 +30,23 @@ datacomTest/
    ```
 
 The backend API will be available at `http://localhost:5000`.
+
+## Frontend Setup (Coming Soon)
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   yarn install
+   ```
+
+3. Start the development server:
+   ```bash
+   yarn start
+   ```
 
 ## Frontend Setup (Coming Soon)
 
@@ -61,4 +78,4 @@ The backend API will be available at `http://localhost:5000`.
 
 ## License
 
-MIT License
+Public Domain
