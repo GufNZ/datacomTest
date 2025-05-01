@@ -48,13 +48,20 @@ public class JobApplicationsControllerTests {
 					/* limit */ It.IsAny<int>(),
 					/* status */ It.IsAny<ApplicationStatus?>(),
 					/* company */ It.IsAny<string>(),
-					/* position */ It.IsAny<string>()
+					/* position */ It.IsAny<string>(),
+					/* sortBy */ It.IsAny<SortKey>(),
+					/* sortDirection */ It.IsAny<SortDirection>()
 				)
 			)
 			.ReturnsAsync(paginatedResponse);
 
 		// Act:
-		var result = await _controller.GetApplications(page: 1, limit: 10);
+		var result = await _controller.GetApplications(
+			page: 1,
+			limit: 10,
+			sortBy: SortKey.DateApplied,
+			sortDirection: SortDirection.Asc
+		);
 
 		// Assert:
 		var actionResult = Assert.IsType<ActionResult<PaginatedResponse<JobApplication>>>(result);

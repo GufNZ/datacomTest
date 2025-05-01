@@ -1,56 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Link, Route, Routes } from 'react-router-dom';
 
-import { Container, Paper, Typography, Box } from '@mui/material';
+import { AppBar, Button, Container, Toolbar, Typography } from '@mui/material';
 
-import { JobApplicationsList } from './components/JobApplicationsList';
-import { AddApplicationForm } from './components/AddApplicationForm';
-import { api } from './services/api';
-import { JobApplication } from './types/JobApplication';
+import { AddApplication } from './pages/AddApplication';
+import { EditApplication } from './pages/EditApplication';
+import { Home } from './pages/Home';
 
 function App() {
-	const [applications, setApplications] = useState<JobApplication[]>([]);
-
-	useEffect(() => {
-		const fetchApplications = async () => {
-			try {
-				const data = await api.getApplications();
-				setApplications(data);
-			} catch (error) {
-				console.error('Error fetching applications:', error);
-			}
-		};
-
-		fetchApplications();
-	}, []);
-
-	const handleAdd = (newApplication: JobApplication) => {
-		setApplications([...applications, newApplication]);
-	};
-
-	const handleEdit = (updatedApplication: JobApplication) => {
-		setApplications(
-			applications.map(app =>
-				app.id === updatedApplication.id ? updatedApplication : app
-			)
-		);
-	};
-
 	return (
 		<Router>
-			<Container maxWidth="md" sx={{ mt: 4 }}>
-				<Paper elevation={3} sx={{ p: 3 }}>
-					<Typography variant="h4" component="h1" gutterBottom>
+			<AppBar position="static">
+				<Toolbar>
+					<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
 						Job Application Tracker
 					</Typography>
-					<Box sx={{ mb: 4 }}>
-						<AddApplicationForm onAdd={handleAdd}/>
-					</Box>
-					<JobApplicationsList
-						applications={applications}
-						onEdit={handleEdit}
-					/>
-				</Paper>
+					<Button color="inherit" component={Link} to="/">
+						Home
+					</Button>
+					<Button color="inherit" component={Link} to="/add">
+						Add Application
+					</Button>
+				</Toolbar>
+			</AppBar>
+			<Container maxWidth="md" sx={{ mt: 8 }}>
+				<Routes>
+					<Route path="/" element={<Home/>}/>
+					<Route path="/add" element={<AddApplication/>}/>
+					<Route path="/edit/:id" element={<EditApplication/>}/>
+				</Routes>
 			</Container>
 		</Router>
 	);

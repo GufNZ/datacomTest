@@ -8,7 +8,9 @@ public interface IJobApplicationService {
 		int limit = 10,
 		ApplicationStatus? status = null,
 		string? company = null,
-		string? position = null
+		string? position = null,
+		SortKey sortBy = SortKey.DateApplied,
+		SortDirection sortDirection = SortDirection.Asc
 	);
 
 	Task<JobApplication?> GetApplicationAsync(int id);

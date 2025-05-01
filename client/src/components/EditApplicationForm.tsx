@@ -1,50 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
 	Box,
 	Button,
+	TextField,
 	FormControl,
 	InputLabel,
-	MenuItem,
 	Select,
-	TextField,
+	MenuItem,
 	Typography,
 } from '@mui/material';
 
-import { ApplicationStatus } from '../types/ApplicationStatus';
 import { api } from '../services/api';
+import { ApplicationStatus } from '../types/ApplicationStatus';
+import { JobApplication } from '../types/JobApplication';
 
-export const AddApplicationForm: React.FC = () => {
+interface EditApplicationFormProps {
+	id: string;
+}
+
+export const EditApplicationForm: React.FC<EditApplicationFormProps> = ({ id }) => {
 	const [companyName, setCompanyName] = useState('');
 	const [position, setPosition] = useState('');
 	const [status, setStatus] = useState(ApplicationStatus.Applied);
 	const navigate = useNavigate();
 
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		const fetchApplication = async () => {
+			try {
+				const application = await api.getApplication(parseInt(id));
+				setCompanyName(application.companyName);
+				setPosition(application.position);
+				setStatus(application.status);
+				setLoading(false);
+			} catch (err) {
+				setError('Failed to fetch application');
+				console.error('Error fetching application:', err);
+				setLoading(false);
+			}
+		};
+
+		fetchApplication();
+	}, [id]);
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		try {
-			const newApplication = {
+			const updatedApplication: JobApplication = {
+				id: parseInt(id),
 				companyName,
 				position,
 				status: status as ApplicationStatus,
 				dateApplied: new Date().toISOString().split('T')[0],
 			};
-			await api.createApplication(newApplication);
+			await api.updateApplication(updatedApplication);
 			navigate('/');
-			setCompanyName('');
-			setPosition('');
-			setStatus(ApplicationStatus.Applied);
 		} catch (error) {
-			console.error('Error adding application:', error);
+			console.error('Error updating application:', error);
 		}
 	};
 
+	if (loading) {
+		return <Typography>Loading...</Typography>;
+	}
+
+	if (error) {
+		return <Typography color="error">{error}</Typography>;
+	}
+
 	return (
 		<Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-			<Typography variant="h6" gutterBottom>
-				Add New Application
-			</Typography>
 			<TextField
 				fullWidth
 				label="Company Name"
@@ -81,7 +110,7 @@ export const AddApplicationForm: React.FC = () => {
 				fullWidth
 				sx={{ mt: 2 }}
 			>
-				Add Application
+				Update Application
 			</Button>
 		</Box>
 	);

@@ -17,15 +17,16 @@ public class JobApplicationService : IJobApplicationService {
 		int limit = 10,
 		ApplicationStatus? status = null,
 		string? company = null,
-		string? position = null
+		string? position = null,
+		SortKey sortBy = SortKey.DateApplied,
+		SortDirection sortDirection = SortDirection.Asc
 	) {
-		var applications = await _repository.GetAllAsync(page, limit, status, company, position);
-		var total = await _repository.CountAsync();
-		var totalPages = (int)Math.Ceiling(total / (double)limit);
+		var applications = await _repository.GetAllAsync(page, limit, status, company, position, sortBy, sortDirection);
+		var totalPages = (int)Math.Ceiling(applications.Count / (double)limit);
 
 		return new PaginatedResponse<JobApplication> {
 			Data = applications,
-			Total = total,
+			Total = applications.Count,
 			Page = page,
 			Pages = totalPages,
 			Limit = limit

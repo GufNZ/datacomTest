@@ -25,6 +25,8 @@ public class JobApplicationsController : ControllerBase {
 	/// <param name="position">Filter by position (optional)</param>
 	/// <param name="page">Page number (optional, default: 1)</param>
 	/// <param name="limit">Number of items per page (optional, default: 10)</param>
+	/// <param name="sortBy">Which field to sort by (optional, default: DateApplied</param>
+	/// <param name="sortDirection">Which way up to sort (optional, default: Descending)</param>
 	/// <returns>Paginated list of filtered job applications.</returns>
 	[HttpGet]
 	public async Task<ActionResult<PaginatedResponse<JobApplication>>> GetApplications(
@@ -32,9 +34,11 @@ public class JobApplicationsController : ControllerBase {
 		[FromQuery] string? company = null,
 		[FromQuery] string? position = null,
 		[FromQuery] int page = 1,
-		[FromQuery] int limit = 10
+		[FromQuery] int limit = 10,
+		[FromQuery] SortKey sortBy = SortKey.DateApplied,
+		[FromQuery] SortDirection sortDirection = SortDirection.Asc
 	) {
-		var result = await _service.GetApplicationsAsync(page, limit, status, company, position);
+		var result = await _service.GetApplicationsAsync(page, limit, status, company, position, sortBy, sortDirection);
 		return Ok(result);
 	}
 

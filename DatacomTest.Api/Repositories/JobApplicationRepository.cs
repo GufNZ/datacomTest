@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 using Microsoft.EntityFrameworkCore;
 
 using DatacomTest.Api.Models;
@@ -18,7 +20,9 @@ public class JobApplicationRepository : IJobApplicationRepository {
 		int limit = 10,
 		ApplicationStatus? status = null,
 		string? company = null,
-		string? position = null
+		string? position = null,
+		SortKey sortBy = SortKey.DateApplied,
+		SortDirection sortDirection = SortDirection.Desc
 	) {
 		await using var context = new JobApplicationDbContext(_options);
 
@@ -36,7 +40,27 @@ public class JobApplicationRepository : IJobApplicationRepository {
 			query = query.Where(a => a.Position.ToUpper().Contains(position.ToUpper()));
 		}
 
-		return await query
+		var ordered = sortBy switch {
+			SortKey.CompanyName => sortDirection == SortDirection.Asc
+				? query.OrderBy(a => a.CompanyName)
+				: query.OrderByDescending(a => a.CompanyName),
+			SortKey.Position => sortDirection == SortDirection.Asc
+				? query.OrderBy(a => a.Position)
+				: query.OrderByDescending(a => a.Position),
+			SortKey.DateApplied => sortDirection == SortDirection.Asc
+				? query.OrderBy(a => a.DateApplied)
+				: query.OrderByDescending(a => a.DateApplied),
+			SortKey.Status => sortDirection == SortDirection.Asc
+				? query.OrderBy(a => a.Status)
+				: query.OrderByDescending(a => a.Status),
+			_ => throw new UnreachableException("Can't get here!")
+		};
+
+		var withIdSort = sortDirection == SortDirection.Asc
+			? ordered.ThenBy(application => application.Id)
+			: ordered.ThenByDescending(application => application.Id);
+
+		return await withIdSort
 			.Skip((page - 1) * limit)
 			.Take(limit)
 			.ToListAsync();
@@ -64,12 +88,6 @@ public class JobApplicationRepository : IJobApplicationRepository {
 		await context.SaveChangesAsync();
 
 		return application;
-	}
-
-	public async Task<int> CountAsync() {
-		await using var context = new JobApplicationDbContext(_options);
-
-		return await context.JobApplications.CountAsync();
 	}
 
 	public async Task DeleteAsync(int id) {

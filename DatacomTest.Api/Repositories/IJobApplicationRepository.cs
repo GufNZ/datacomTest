@@ -8,11 +8,15 @@ public interface IJobApplicationRepository {
 		int limit = 10,
 		ApplicationStatus? status = null,
 		string? company = null,
-		string? position = null
+		string? position = null,
+		SortKey sortBy = SortKey.DateApplied,
+		SortDirection sortDirection = SortDirection.Desc
 	);
-	Task<int> CountAsync();
 	Task<JobApplication?> GetByIdAsync(int id);
+
 	Task<JobApplication> AddAsync(JobApplication application);
+
 	Task<JobApplication> UpdateAsync(JobApplication application);
+
 	Task DeleteAsync(int id);
 }

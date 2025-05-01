@@ -1,6 +1,8 @@
 import axios from 'axios';
 
+import { ApplicationStatus } from '../types/ApplicationStatus';
 import { JobApplication } from '../types/JobApplication';
+import { SortKey } from '../types/SortKey';
 
 const API_URL = 'http://localhost:5251/api/applications';
 
@@ -12,10 +14,38 @@ interface PaginatedResponse<T> {
 	limit: number;
 }
 
+interface GetApplicationsArgs {
+	status?: ApplicationStatus;
+	company?: string;
+	position?: string;
+	sortBy?: SortKey;
+	sortDirection: 'asc' | 'desc';
+	page?: number;
+	limit?: number;
+}
+
 export const api = {
-	getApplications: async (page: number = 1, limit: number = 10) => {
+	getApplications: async ({
+		status,
+		company,
+		position,
+		sortBy = SortKey.DateApplied,
+		sortDirection = 'desc',
+		page = 1,
+		limit = 10
+	}: GetApplicationsArgs) => {
+		const params = new URLSearchParams({
+			...(status && { status: status }),
+			...(company && { company: company }),
+			...(position && { position: position }),
+			...(sortBy && { sortBy: sortBy }),
+			...(sortDirection && { sortDirection: sortDirection }),
+			page: page.toString(),
+			limit: limit.toString()
+		});
+
 		const response = await axios.get<PaginatedResponse<JobApplication>>(
-			`${API_URL}?page=${page}&limit=${limit}`
+			`${API_URL}?${params.toString()}`
 		);
 		return response.data;
 	},
@@ -26,6 +56,10 @@ export const api = {
 	createApplication: async (application: Omit<JobApplication, 'id'>) => {
 		const response = await axios.post<JobApplication>(API_URL, application);
 		return response.data;
+	},
+	deleteApplication: async (id: number) => {
+		await axios.delete(`${API_URL}/${id}`);
+		return true;
 	},
 	updateApplication: async (application: JobApplication) => {
 		const response = await axios.put<JobApplication>(`${API_URL}/${application.id}`, application);

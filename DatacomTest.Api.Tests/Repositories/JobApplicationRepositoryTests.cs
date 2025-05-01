@@ -108,7 +108,7 @@ public class JobApplicationRepositoryTests : IClassFixture<JobApplicationReposit
 
 		// Assert:
 		Assert.NotNull(result);
-		Assert.Equal(testApplication.CompanyName, result!.CompanyName);
+		Assert.Equal(testApplication.CompanyName, result.CompanyName);
 		Assert.Equal(testApplication.Position, result.Position);
 		Assert.Equal(testApplication.Status, result.Status);
 		Assert.Equal(testApplication.DateApplied, result.DateApplied);

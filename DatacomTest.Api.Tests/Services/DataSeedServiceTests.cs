@@ -31,7 +31,15 @@ public class DataSeedServiceTests {
 		};
 
 		_mockRepository
-			.Setup(repo => repo.GetAllAsync(1, 10, null, null, null))
+			.Setup(repo => repo.GetAllAsync(
+				/* page */ 1,
+				/* limit */ 10,
+				/* status */ null,
+				/* company */ null,
+				/* position */ null,
+				/* sortBy */ SortKey.DateApplied,
+				/* sortDirection */ SortDirection.Desc
+			))
 			.ReturnsAsync(existingApps);
 
 		// Act:
@@ -47,7 +55,15 @@ public class DataSeedServiceTests {
 		var emptyList = new List<JobApplication>();
 
 		_mockRepository
-			.Setup(repo => repo.GetAllAsync(1, 10, null, null, null))
+			.Setup(repo => repo.GetAllAsync(
+				/* page */ 1,
+				/* limit */ 10,
+				/* status */ null,
+				/* company */ null,
+				/* position */ null,
+				/* sortBy */ SortKey.DateApplied,
+				/* sortDirection */ SortDirection.Desc
+			))
 			.ReturnsAsync(emptyList);
 
 		// Act:
@@ -55,26 +71,5 @@ public class DataSeedServiceTests {
 
 		// Assert:
 		_mockRepository.Verify(repo => repo.AddAsync(It.IsAny<JobApplication>()), Times.Exactly(20));
-	}
-
-	[Fact]
-	public async Task SeedDataAsync_SeedsWithCorrectData_WhenNoDataExists() {
-		// Arrange:
-		var emptyList = new List<JobApplication>();
-
-		_mockRepository
-			.Setup(repo => repo.GetAllAsync(1, 10, null, null, null))
-			.ReturnsAsync(emptyList);
-
-		// Act:
-		await _service.SeedDataAsync();
-
-		// Assert:
-		_mockRepository.Verify(
-			repo => repo.AddAsync(
-				It.IsAny<JobApplication>()
-			),
-			Times.Exactly(20)
-);
 	}
 }

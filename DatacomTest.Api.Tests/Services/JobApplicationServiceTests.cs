@@ -31,12 +31,16 @@ public class JobApplicationServiceTests {
 		};
 
 		_mockRepository
-			.Setup(repo => repo.GetAllAsync(1, 10, null, null, null))
+			.Setup(repo => repo.GetAllAsync(
+				/* page */ 1,
+				/* limit */ 10,
+				/* status */ null,
+				/* company */ null,
+				/* position */ null,
+				/* sortBy */ SortKey.DateApplied,
+				/* sortDirection */ SortDirection.Desc
+			))
 			.ReturnsAsync(applications);
-
-		_mockRepository
-			.Setup(repo => repo.CountAsync())
-			.ReturnsAsync(applications.Count);
 
 		// Act:
 		var result = await _service.GetApplicationsAsync();
@@ -70,7 +74,7 @@ public class JobApplicationServiceTests {
 
 		// Assert:
 		Assert.NotNull(result);
-		Assert.Equal(1, result!.Id);
+		Assert.Equal(1, result.Id);
 	}
 
 	[Fact]
