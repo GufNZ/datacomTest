@@ -1,4 +1,3 @@
-using DatacomTest.Api.Models;
 using DatacomTest.Api.Repositories;
 
 using Microsoft.EntityFrameworkCore;

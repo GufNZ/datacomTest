@@ -1,67 +1,55 @@
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 using DatacomTest.Api.Models;
 
-using Microsoft.EntityFrameworkCore;
+namespace DatacomTest.Api.Repositories;
 
-namespace DatacomTest.Api.Repositories {
-	public class JobApplicationRepository : IJobApplicationRepository {
-		private readonly DbContextOptions<JobApplicationDbContext> _options;
-
-
-		public JobApplicationRepository(DbContextOptions<JobApplicationDbContext> options) {
-			_options = options;
-		}
+public class JobApplicationRepository : IJobApplicationRepository {
+	private readonly DbContextOptions<JobApplicationDbContext> _options;
 
 
-		public async Task<IEnumerable<JobApplication>> GetAllAsync() {
-			using var context = new JobApplicationDbContext(_options);
-
-			return await context.JobApplications.ToListAsync();
-		}
-
-		public async Task<JobApplication?> GetByIdAsync(int id) {
-			using var context = new JobApplicationDbContext(_options);
-
-			return await context.JobApplications.FindAsync(id);
-		}
-
-		public async Task<JobApplication> CreateAsync(JobApplication application) {
-			using var context = new JobApplicationDbContext(_options);
-
-			context.JobApplications.Add(application);
-			await context.SaveChangesAsync();
-
-			return application;
-		}
-
-		public async Task<JobApplication> UpdateAsync(JobApplication application) {
-			using var context = new JobApplicationDbContext(_options);
-
-			context.JobApplications.Update(application);
-			await context.SaveChangesAsync();
-
-			return application;
-		}
+	public JobApplicationRepository(DbContextOptions<JobApplicationDbContext> options) {
+		_options = options;
 	}
 
-	public class JobApplicationDbContext : DbContext {
-		public JobApplicationDbContext(DbContextOptions<JobApplicationDbContext> options) : base(options) { }
 
+	public async Task<IEnumerable<JobApplication>> GetAllAsync() {
+		using var context = new JobApplicationDbContext(_options);
 
-		public DbSet<JobApplication> JobApplications { get; set; } = null!;
+		return await context.JobApplications.ToListAsync();
+	}
 
+	public async Task<JobApplication?> GetByIdAsync(int id) {
+		using var context = new JobApplicationDbContext(_options);
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder) {
-			base.OnModelCreating(modelBuilder);
+		return await context.JobApplications.FindAsync(id);
+	}
 
-			modelBuilder.Entity<JobApplication>()
-				.Property(e => e.CompanyName)
-					.HasMaxLength(200);
+	public async Task<JobApplication> CreateAsync(JobApplication application) {
+		using var context = new JobApplicationDbContext(_options);
 
-			modelBuilder.Entity<JobApplication>()
-				.Property(e => e.Position)
-					.HasMaxLength(200);
+		context.JobApplications.Add(application);
+		await context.SaveChangesAsync();
+
+		return application;
+	}
+
+	public async Task<JobApplication> UpdateAsync(JobApplication application) {
+		using var context = new JobApplicationDbContext(_options);
+
+		context.JobApplications.Update(application);
+		await context.SaveChangesAsync();
+
+		return application;
+	}
+
+	public async Task DeleteAsync(int id) {
+		using var context = new JobApplicationDbContext(_options);
+
+		var application = await context.JobApplications.FindAsync(id);
+		if (application != null) {
+			context.JobApplications.Remove(application);
+			await context.SaveChangesAsync();
 		}
 	}
 }
