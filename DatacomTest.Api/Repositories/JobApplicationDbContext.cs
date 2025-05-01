@@ -4,10 +4,7 @@ using DatacomTest.Api.Models;
 
 namespace DatacomTest.Api.Repositories;
 
-public class JobApplicationDbContext : DbContext {
-	public JobApplicationDbContext(DbContextOptions<JobApplicationDbContext> options) : base(options) { }
-
-
+public class JobApplicationDbContext(DbContextOptions<JobApplicationDbContext> options) : DbContext(options) {
 	public DbSet<JobApplication> JobApplications { get; set; } = null!;
 
 

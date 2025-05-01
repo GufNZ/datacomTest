@@ -1,8 +1,5 @@
-using System;
-
 using Microsoft.EntityFrameworkCore;
 
-using DatacomTest.Api.Models;
 using DatacomTest.Api.Repositories;
 
 namespace DatacomTest.Api.Tests.Repositories;

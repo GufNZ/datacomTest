@@ -1,10 +1,4 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-
 using Microsoft.EntityFrameworkCore;
-
-using Xunit;
 
 using DatacomTest.Api.Models;
 using DatacomTest.Api.Repositories;
@@ -24,7 +18,7 @@ public class JobApplicationRepositoryTests : IClassFixture<JobApplicationReposit
 	[Fact]
 	public async Task GetAllAsync_ReturnsAllApplications() {
 		// Arrange:
-		using var context = new JobApplicationDbContext(_options);
+		await using var context = new JobApplicationDbContext(_options);
 		var repository = new JobApplicationRepository(_options);
 
 		// Clean up any existing data:
@@ -38,8 +32,7 @@ public class JobApplicationRepositoryTests : IClassFixture<JobApplicationReposit
 			DateApplied = DateOnly.FromDateTime(DateTime.Now)
 		};
 
-		await context.JobApplications.AddAsync(testApplication);
-		await context.SaveChangesAsync();
+		await repository.AddAsync(testApplication);
 
 		// Act:
 		var result = await repository.GetAllAsync();
@@ -51,6 +44,48 @@ public class JobApplicationRepositoryTests : IClassFixture<JobApplicationReposit
 		Assert.Equal(testApplication.Position, application.Position);
 		Assert.Equal(testApplication.Status, application.Status);
 		Assert.Equal(testApplication.DateApplied, application.DateApplied);
+	}
+
+	[Fact]
+	public async Task GetAllAsync_ReturnsFilteredApplications() {
+		// Arrange:
+		await using var context = new JobApplicationDbContext(_options);
+		var repository = new JobApplicationRepository(_options);
+
+		// Clean up any existing data:
+		context.JobApplications.RemoveRange(context.JobApplications);
+		await context.SaveChangesAsync();
+
+		// Add test applications:
+		var testApplications = new List<JobApplication> {
+			new JobApplication {
+				CompanyName = "Test Company 1",
+				Position = "Test Position 1",
+				Status = ApplicationStatus.Applied,
+				DateApplied = DateOnly.FromDateTime(DateTime.Now)
+			},
+			new JobApplication {
+				CompanyName = "Test Company 2",
+				Position = "Test Position 2",
+				Status = ApplicationStatus.Interview,
+				DateApplied = DateOnly.FromDateTime(DateTime.Now)
+			}
+		};
+
+		foreach (var app in testApplications) {
+			await repository.AddAsync(app);
+		}
+
+		// Act:
+		var result = await repository.GetAllAsync(1, 10, ApplicationStatus.Applied);
+
+		// Assert:
+		Assert.Single(result);
+		var application = result[0];
+		Assert.Equal(testApplications[0].CompanyName, application.CompanyName);
+		Assert.Equal(testApplications[0].Position, application.Position);
+		Assert.Equal(testApplications[0].Status, application.Status);
+		Assert.Equal(testApplications[0].DateApplied, application.DateApplied);
 	}
 
 	[Fact]
@@ -66,22 +101,21 @@ public class JobApplicationRepositoryTests : IClassFixture<JobApplicationReposit
 			DateApplied = DateOnly.FromDateTime(DateTime.Now)
 		};
 
-		await context.JobApplications.AddAsync(testApplication);
-		await context.SaveChangesAsync();
+		await repository.AddAsync(testApplication);
 
 		// Act:
 		var result = await repository.GetByIdAsync(testApplication.Id);
 
 		// Assert:
 		Assert.NotNull(result);
-		Assert.Equal(testApplication.CompanyName, result.CompanyName);
+		Assert.Equal(testApplication.CompanyName, result!.CompanyName);
 		Assert.Equal(testApplication.Position, result.Position);
 		Assert.Equal(testApplication.Status, result.Status);
 		Assert.Equal(testApplication.DateApplied, result.DateApplied);
 	}
 
 	[Fact]
-	public async Task CreateAsync_AddsNewApplication() {
+	public async Task AddAsync_AddsNewApplication() {
 		// Arrange:
 		var repository = new JobApplicationRepository(_options);
 
@@ -93,7 +127,7 @@ public class JobApplicationRepositoryTests : IClassFixture<JobApplicationReposit
 		};
 
 		// Act:
-		var result = await repository.CreateAsync(newApplication);
+		var result = await repository.AddAsync(newApplication);
 
 		// Assert:
 		Assert.NotNull(result);
@@ -117,8 +151,7 @@ public class JobApplicationRepositoryTests : IClassFixture<JobApplicationReposit
 			DateApplied = DateOnly.FromDateTime(DateTime.Now)
 		};
 
-		await context.JobApplications.AddAsync(testApplication);
-		await context.SaveChangesAsync();
+		await repository.AddAsync(testApplication);
 
 		testApplication.CompanyName = "Updated Company";
 		testApplication.Position = "Updated Position";
@@ -148,8 +181,7 @@ public class JobApplicationRepositoryTests : IClassFixture<JobApplicationReposit
 			DateApplied = DateOnly.FromDateTime(DateTime.Now)
 		};
 
-		await context.JobApplications.AddAsync(testApplication);
-		await context.SaveChangesAsync();
+		await repository.AddAsync(testApplication);
 
 		// Act:
 		await repository.DeleteAsync(testApplication.Id);

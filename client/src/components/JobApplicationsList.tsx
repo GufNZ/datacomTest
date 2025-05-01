@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
 	Table,
@@ -12,6 +12,10 @@ import {
 	IconButton,
 	MenuItem,
 	Menu,
+	Pagination,
+	Stack,
+	CircularProgress,
+	Alert,
 } from '@mui/material';
 import { Edit } from '@mui/icons-material';
 
@@ -20,16 +24,36 @@ import { JobApplication } from '../types/JobApplication';
 import { ApplicationStatus } from '../types/ApplicationStatus';
 
 interface JobApplicationsListProps {
-	applications: JobApplication[];
 	onEdit: (application: JobApplication) => void;
 }
 
-export const JobApplicationsList: React.FC<JobApplicationsListProps> = ({
-	applications,
-	onEdit,
-}) => {
-	const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-	const [selectedApplication, setSelectedApplication] = React.useState<JobApplication | null>(null);
+export const JobApplicationsList: React.FC<JobApplicationsListProps> = ({ onEdit }) => {
+	const [applications, setApplications] = useState<JobApplication[]>([]);
+	const [page, setPage] = useState(1);
+	const [totalPages, setTotalPages] = useState(1);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+	const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
+
+	const fetchApplications = async (page: number = 1) => {
+		setLoading(true);
+		setError(null);
+		try {
+			const response = await api.getApplications(page);
+			setApplications(response.data);
+			setTotalPages(response.pages);
+		} catch (err) {
+			setError('Failed to fetch applications');
+			console.error('Error fetching applications:', err);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		fetchApplications(page);
+	}, [page]);
 
 	const handleEditClick = (event: React.MouseEvent<HTMLElement>, application: JobApplication) => {
 		setAnchorEl(event.currentTarget);
@@ -50,49 +74,78 @@ export const JobApplicationsList: React.FC<JobApplicationsListProps> = ({
 		handleEditClose();
 	};
 
+	const handlePageChange = (_: React.ChangeEvent<unknown>, newPage: number) => {
+		setPage(newPage);
+	};
+
 	return (
 		<Box sx={{ width: '100%' }}>
-			<TableContainer component={Paper}>
-				<Table>
-					<TableHead>
-						<TableRow>
-							<TableCell>Company Name</TableCell>
-							<TableCell>Position</TableCell>
-							<TableCell>Status</TableCell>
-							<TableCell>Date Applied</TableCell>
-							<TableCell>Actions</TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{applications.map((application) => (
-							<TableRow key={application.id}>
-								<TableCell>{application.companyName}</TableCell>
-								<TableCell>{application.position}</TableCell>
-								<TableCell>{application.status}</TableCell>
-								<TableCell>{application.dateApplied}</TableCell>
-								<TableCell>
-									<IconButton
-										size="small"
-										onClick={(event) => handleEditClick(event, application)}
-									>
-										<Edit />
-									</IconButton>
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</TableContainer>
-			<Menu
-				anchorEl={anchorEl}
-				open={Boolean(anchorEl)}
-				onClose={handleEditClose}
-			>
-				<MenuItem onClick={() => handleStatusChange(ApplicationStatus.Applied)}>Applied</MenuItem>
-				<MenuItem onClick={() => handleStatusChange(ApplicationStatus.Interview)}>Interview</MenuItem>
-				<MenuItem onClick={() => handleStatusChange(ApplicationStatus.Offer)}>Offer</MenuItem>
-				<MenuItem onClick={() => handleStatusChange(ApplicationStatus.Rejected)}>Rejected</MenuItem>
-			</Menu>
+			{error && (
+				<Alert severity="error" sx={{ mb: 2 }}>
+					{error}
+				</Alert>
+			)}
+			{loading ? (
+				<CircularProgress />
+			) : (
+				<>
+					<TableContainer component={Paper}>
+						<Table>
+							<TableHead>
+								<TableRow>
+									<TableCell>Company Name</TableCell>
+									<TableCell>Position</TableCell>
+									<TableCell>Status</TableCell>
+									<TableCell>Date Applied</TableCell>
+									<TableCell>Actions</TableCell>
+								</TableRow>
+							</TableHead>
+							<TableBody>
+								{applications.map((application) => (
+									<TableRow key={application.id}>
+										<TableCell>{application.companyName}</TableCell>
+										<TableCell>{application.position}</TableCell>
+										<TableCell>{application.status}</TableCell>
+										<TableCell>{application.dateApplied}</TableCell>
+										<TableCell>
+											<IconButton
+												size="small"
+												onClick={(event) => handleEditClick(event, application)}
+											>
+												<Edit />
+											</IconButton>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</TableContainer>
+					{totalPages > 1 && (
+						<Stack
+							sx={{ mt: 2 }}
+							direction="row"
+							justifyContent="center"
+						>
+							<Pagination
+								count={totalPages}
+								page={page}
+								onChange={handlePageChange}
+								color="primary"
+							/>
+						</Stack>
+					)}
+					<Menu
+						anchorEl={anchorEl}
+						open={Boolean(anchorEl)}
+						onClose={handleEditClose}
+					>
+						<MenuItem onClick={() => handleStatusChange(ApplicationStatus.Applied)}>Applied</MenuItem>
+						<MenuItem onClick={() => handleStatusChange(ApplicationStatus.Interview)}>Interview</MenuItem>
+						<MenuItem onClick={() => handleStatusChange(ApplicationStatus.Offer)}>Offer</MenuItem>
+						<MenuItem onClick={() => handleStatusChange(ApplicationStatus.Rejected)}>Rejected</MenuItem>
+					</Menu>
+				</>
+			)}
 		</Box>
 	);
 };

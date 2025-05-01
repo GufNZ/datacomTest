@@ -1,37 +1,29 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 using Moq;
 
-using Xunit;
-
 using DatacomTest.Api.Controllers;
 using DatacomTest.Api.Models;
-using DatacomTest.Api.Repositories;
+using DatacomTest.Api.Services;
+using DatacomTest.Api.Tests.Extensions;
 
 namespace DatacomTest.Api.Tests.Controllers;
 
-[Collection("Database collection")]
 public class JobApplicationsControllerTests {
-	private readonly Mock<IJobApplicationRepository> _mockRepo;
+	private readonly Mock<IJobApplicationService> _mockService;
 	private readonly JobApplicationsController _controller;
 
 
 	public JobApplicationsControllerTests() {
-		_mockRepo = new Mock<IJobApplicationRepository>();
-		_controller = new JobApplicationsController(_mockRepo.Object);
+		_mockService = new Mock<IJobApplicationService>();
+		_controller = new JobApplicationsController(_mockService.Object);
 	}
 
 
 	[Fact]
-	public async Task GetApplications_ReturnsAllApplications() {
+	public async Task GetApplications_ReturnsPaginatedResponse() {
 		// Arrange:
-		var testApplications = new List<JobApplication> {
+		var applications = new List<JobApplication> {
 			new JobApplication {
 				Id = 1,
 				CompanyName = "Test Company",
@@ -41,106 +33,44 @@ public class JobApplicationsControllerTests {
 			}
 		};
 
-		_mockRepo.Setup(repo => repo.GetAllAsync())
-			.ReturnsAsync(testApplications);
-
-		// Act:
-		var result = await _controller.GetApplications();
-
-		// Assert
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var applications = Assert.IsType<List<JobApplication>>(okResult.Value);
-		Assert.Single(applications);
-		Assert.Equal(testApplications[0].CompanyName, applications[0].CompanyName);
-		Assert.Equal(testApplications[0].Position, applications[0].Position);
-		Assert.Equal(testApplications[0].Status, applications[0].Status);
-		Assert.Equal(testApplications[0].DateApplied, applications[0].DateApplied);
-	}
-
-	[Fact]
-	public async Task GetApplications_FiltersByStatus() {
-		// Arrange:
-		var testApplications = new List<JobApplication> {
-			new JobApplication {
-				Id = 1,
-				CompanyName = "Test Company",
-				Position = "Test Position",
-				Status = ApplicationStatus.Applied,
-				DateApplied = DateOnly.FromDateTime(DateTime.Now)
-			},
-			new JobApplication {
-				Id = 2,
-				CompanyName = "Another Company",
-				Position = "Another Position",
-				Status = ApplicationStatus.Interview,
-				DateApplied = DateOnly.FromDateTime(DateTime.Now)
-			}
+		var paginatedResponse = new PaginatedResponse<JobApplication> {
+			Data = applications,
+			Total = 1,
+			Page = 1,
+			Pages = 1,
+			Limit = 10
 		};
 
-		_mockRepo.Setup(repo => repo.GetAllAsync())
-			.ReturnsAsync(testApplications);
+		_mockService
+			.Setup(
+				service => service.GetApplicationsAsync(
+					/* page */ It.IsAny<int>(),
+					/* limit */ It.IsAny<int>(),
+					/* status */ It.IsAny<ApplicationStatus?>(),
+					/* company */ It.IsAny<string>(),
+					/* position */ It.IsAny<string>()
+				)
+			)
+			.ReturnsAsync(paginatedResponse);
 
 		// Act:
-		var result = await _controller.GetApplications(status: ApplicationStatus.Applied);
+		var result = await _controller.GetApplications(page: 1, limit: 10);
 
 		// Assert:
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var applications = Assert.IsType<List<JobApplication>>(okResult.Value);
-		Assert.Single(applications);
-		Assert.Equal(ApplicationStatus.Applied, applications[0].Status);
+		var actionResult = Assert.IsType<ActionResult<PaginatedResponse<JobApplication>>>(result);
+		var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+		var response = Assert.IsType<PaginatedResponse<JobApplication>>(okResult.Value);
+		Assert.Single(response.Data);
+		Assert.Equal(1, response.Total);
+		Assert.Equal(1, response.Pages);
+		Assert.Equal(1, response.Page);
+		Assert.Equal(10, response.Limit);
 	}
 
 	[Fact]
-	public async Task GetApplications_FiltersByCompanyName() {
+	public async Task GetApplication_ReturnsApplication_WhenFound() {
 		// Arrange:
-		var testApplications = new List<JobApplication> {
-			new JobApplication {
-				Id = 1,
-				CompanyName = "Test Company",
-				Position = "Test Position",
-				Status = ApplicationStatus.Applied,
-				DateApplied = DateOnly.FromDateTime(DateTime.Now)
-			},
-			new JobApplication {
-				Id = 2,
-				CompanyName = "Another Company",
-				Position = "Another Position",
-				Status = ApplicationStatus.Interview,
-				DateApplied = DateOnly.FromDateTime(DateTime.Now)
-			}
-		};
-
-		_mockRepo.Setup(repo => repo.GetAllAsync())
-			.ReturnsAsync(testApplications);
-
-		// Act:
-		var result = await _controller.GetApplications(company: "test");
-
-		// Assert:
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var applications = Assert.IsType<List<JobApplication>>(okResult.Value);
-		Assert.Single(applications);
-		Assert.Equal("Test Company", applications[0].CompanyName);
-	}
-
-	[Fact]
-	public async Task GetApplication_ReturnsNotFoundForNonExistentApplication() {
-		// Arrange:
-		var id = 1;
-		_mockRepo.Setup(repo => repo.GetByIdAsync(id))
-			.ReturnsAsync((JobApplication?)null);
-
-		// Act:
-		var result = await _controller.GetApplication(id);
-
-		// Assert:
-		var notFoundResult = Assert.IsType<NotFoundResult>(result.Result);
-	}
-
-	[Fact]
-	public async Task GetApplication_ReturnsCorrectApplication() {
-		// Arrange:
-		var testApplication = new JobApplication {
+		var application = new JobApplication {
 			Id = 1,
 			CompanyName = "Test Company",
 			Position = "Test Position",
@@ -148,50 +78,67 @@ public class JobApplicationsControllerTests {
 			DateApplied = DateOnly.FromDateTime(DateTime.Now)
 		};
 
-		_mockRepo.Setup(repo => repo.GetByIdAsync(testApplication.Id))
-			.ReturnsAsync(testApplication);
+		_mockService
+			.Setup(service => service.GetApplicationAsync(1))
+			.ReturnsAsync(application);
 
 		// Act:
-		var result = await _controller.GetApplication(testApplication.Id);
+		var result = await _controller.GetApplication(1);
 
 		// Assert:
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var application = Assert.IsType<JobApplication>(okResult.Value);
-		Assert.Equal(testApplication.CompanyName, application.CompanyName);
-		Assert.Equal(testApplication.Position, application.Position);
-		Assert.Equal(testApplication.Status, application.Status);
-		Assert.Equal(testApplication.DateApplied, application.DateApplied);
+		var actionResult = Assert.IsType<ActionResult<JobApplication>>(result);
+		var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+		var returnedApp = Assert.IsType<JobApplication>(okResult.Value);
+		Assert.Equal(1, returnedApp.Id);
+	}
+
+	[Fact]
+	public async Task GetApplication_ReturnsNotFound_WhenNotFound() {
+		// Arrange:
+		_mockService
+			.Setup(service => service.GetApplicationAsync(1))
+			.ReturnsAsync((JobApplication?)null);
+
+		// Act:
+		var result = await _controller.GetApplication(1);
+
+		// Assert:
+		var actionResult = Assert.IsType<ActionResult<JobApplication>>(result);
+		Assert.IsType<NotFoundResult>(actionResult.Result);
 	}
 
 	[Fact]
 	public async Task CreateApplication_CreatesNewApplication() {
 		// Arrange:
-		var newApplication = new JobApplication {
-			CompanyName = "New Company",
-			Position = "New Position",
+		var application = new JobApplication {
+			CompanyName = "Test Company",
+			Position = "Test Position",
 			Status = ApplicationStatus.Applied,
 			DateApplied = DateOnly.FromDateTime(DateTime.Now)
 		};
 
-		_mockRepo.Setup(repo => repo.CreateAsync(newApplication))
-			.ReturnsAsync(newApplication);
+		const int EXPECTED_ID = 1;
+		application.Id = EXPECTED_ID;
+
+		_mockService
+			.Setup(service => service.CreateApplicationAsync(It.IsAny<JobApplication>()))
+			.ReturnsAsync(application);
 
 		// Act:
-		var result = await _controller.CreateApplication(newApplication);
+		var result = await _controller.CreateApplication(application);
 
 		// Assert:
-		var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
-		var returnedApplication = Assert.IsType<JobApplication>(createdResult.Value);
-		Assert.Equal(newApplication.CompanyName, returnedApplication.CompanyName);
-		Assert.Equal(newApplication.Position, returnedApplication.Position);
-		Assert.Equal(newApplication.Status, returnedApplication.Status);
-		Assert.Equal(newApplication.DateApplied, returnedApplication.DateApplied);
+		_mockService.Verify(service => service.CreateApplicationAsync(It.IsAny<JobApplication>()), Times.Once);
+		var actionResult = Assert.IsType<ActionResult<JobApplication>>(result);
+		var createdAtAction = Assert.IsType<CreatedAtActionResult>(actionResult.Result);
+		var createdApp = Assert.IsType<JobApplication>(createdAtAction.Value);
+		Assert.Equal(EXPECTED_ID, createdApp.Id);
 	}
 
 	[Fact]
 	public async Task UpdateApplication_UpdatesExistingApplication() {
 		// Arrange:
-		var testApplication = new JobApplication {
+		var application = new JobApplication {
 			Id = 1,
 			CompanyName = "Test Company",
 			Position = "Test Position",
@@ -199,52 +146,51 @@ public class JobApplicationsControllerTests {
 			DateApplied = DateOnly.FromDateTime(DateTime.Now)
 		};
 
-		var updatedApplication = new JobApplication {
-			Id = testApplication.Id,
-			CompanyName = "Updated Company",
-			Position = "Updated Position",
-			Status = ApplicationStatus.Interview,
-			DateApplied = testApplication.DateApplied
-		};
-
-		// Mock both GetByIdAsync and UpdateAsync
-		_mockRepo.Setup(repo => repo.GetByIdAsync(testApplication.Id))
-			.ReturnsAsync(testApplication);
-
-		_mockRepo.Setup(repo => repo.UpdateAsync(It.IsAny<JobApplication>()))
-			.ReturnsAsync(updatedApplication);
+		_mockService
+			.Setup(service => service.UpdateApplicationAsync(1, application))
+			.ReturnsAsync(application);
 
 		// Act:
-		var result = await _controller.UpdateApplication(testApplication.Id, updatedApplication);
+		var result = await _controller.UpdateApplication(1, application);
 
 		// Assert:
-		var okResult = Assert.IsType<OkObjectResult>(result.Result);
-		var returnedApplication = Assert.IsType<JobApplication>(okResult.Value);
-		Assert.Equal(updatedApplication.CompanyName, returnedApplication.CompanyName);
-		Assert.Equal(updatedApplication.Position, returnedApplication.Position);
-		Assert.Equal(updatedApplication.Status, returnedApplication.Status);
-		Assert.Equal(updatedApplication.DateApplied, returnedApplication.DateApplied);
+		_mockService.Verify(service => service.UpdateApplicationAsync(1, application), Times.Once);
+		var actionResult = Assert.IsType<ActionResult<JobApplication>>(result);
+		var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+		var returnedApp = Assert.IsType<JobApplication>(okResult.Value);
+		Assert.Equal(1, returnedApp.Id);
+	}
+
+	[Fact]
+	public async Task UpdateApplication_ReturnsBadRequest_WhenIdsDontMatch() {
+		// Arrange:
+		var application = new JobApplication {
+			Id = 2,
+			CompanyName = "Test Company",
+			Position = "Test Position",
+			Status = ApplicationStatus.Applied,
+			DateApplied = DateOnly.FromDateTime(DateTime.Now)
+		};
+
+		// Act & Assert:
+		var result = await _controller.UpdateApplication(1, application);
+		var badRequestResult = Assert.IsType<ActionResult<JobApplication>>(result);
+		var badRequest = Assert.IsType<BadRequestObjectResult>(badRequestResult.Result);
+		Assert.Equal("Application ID in URL does not match the ID in the request body!", badRequest.Value);
 	}
 
 	[Fact]
 	public async Task DeleteApplication_DeletesExistingApplication() {
 		// Arrange:
-		var id = 1;
-		_mockRepo.Setup(repo => repo.GetByIdAsync(id))
-			.ReturnsAsync(
-				new JobApplication {
-				Id = id,
-				CompanyName = "Test Company",
-				Position = "Test Position",
-				Status = ApplicationStatus.Applied,
-				DateApplied = DateOnly.FromDateTime(DateTime.Now)
-			}
-		);
+		const int ID = 1;
+		_mockService
+			.Setup(service => service.DeleteApplicationAsync(ID))
+			.ReturnsAsync();
 
 		// Act:
-		var result = await _controller.DeleteApplication(id);
+		var result = await _controller.DeleteApplication(ID);
 
 		// Assert:
-		var noContentResult = Assert.IsType<NoContentResult>(result);
+		Assert.IsType<NoContentResult>(result);
 	}
 }

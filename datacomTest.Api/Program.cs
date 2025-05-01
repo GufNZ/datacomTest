@@ -14,6 +14,7 @@ builder.Services.AddDbContext<JobApplicationDbContext>(
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<IJobApplicationRepository, JobApplicationRepository>();
 builder.Services.AddScoped<IDataSeedService, DataSeedService>();
+builder.Services.AddScoped<IJobApplicationService, JobApplicationService>();
 
 builder.Services.AddControllers();
 

@@ -13,29 +13,52 @@ public class JobApplicationRepository : IJobApplicationRepository {
 	}
 
 
-	public async Task<IEnumerable<JobApplication>> GetAllAsync() {
-		using var context = new JobApplicationDbContext(_options);
+	public async Task<List<JobApplication>> GetAllAsync(
+		int page = 1,
+		int limit = 10,
+		ApplicationStatus? status = null,
+		string? company = null,
+		string? position = null
+	) {
+		await using var context = new JobApplicationDbContext(_options);
 
-		return await context.JobApplications.ToListAsync();
+		var query = context.JobApplications.AsQueryable();
+
+		if (status.HasValue) {
+			query = query.Where(a => a.Status == status.Value);
+		}
+
+		if (!string.IsNullOrWhiteSpace(company)) {
+			query = query.Where(a => a.CompanyName.ToUpper().Contains(company.ToUpper()));
+		}
+
+		if (!string.IsNullOrWhiteSpace(position)) {
+			query = query.Where(a => a.Position.ToUpper().Contains(position.ToUpper()));
+		}
+
+		return await query
+			.Skip((page - 1) * limit)
+			.Take(limit)
+			.ToListAsync();
 	}
 
 	public async Task<JobApplication?> GetByIdAsync(int id) {
-		using var context = new JobApplicationDbContext(_options);
+		await using var context = new JobApplicationDbContext(_options);
 
 		return await context.JobApplications.FindAsync(id);
 	}
 
-	public async Task<JobApplication> CreateAsync(JobApplication application) {
-		using var context = new JobApplicationDbContext(_options);
+	public async Task<JobApplication> AddAsync(JobApplication application) {
+		await using var context = new JobApplicationDbContext(_options);
 
-		context.JobApplications.Add(application);
+		await context.JobApplications.AddAsync(application);
 		await context.SaveChangesAsync();
 
 		return application;
 	}
 
 	public async Task<JobApplication> UpdateAsync(JobApplication application) {
-		using var context = new JobApplicationDbContext(_options);
+		await using var context = new JobApplicationDbContext(_options);
 
 		context.JobApplications.Update(application);
 		await context.SaveChangesAsync();
@@ -43,8 +66,14 @@ public class JobApplicationRepository : IJobApplicationRepository {
 		return application;
 	}
 
+	public async Task<int> CountAsync() {
+		await using var context = new JobApplicationDbContext(_options);
+
+		return await context.JobApplications.CountAsync();
+	}
+
 	public async Task DeleteAsync(int id) {
-		using var context = new JobApplicationDbContext(_options);
+		await using var context = new JobApplicationDbContext(_options);
 
 		var application = await context.JobApplications.FindAsync(id);
 		if (application != null) {
