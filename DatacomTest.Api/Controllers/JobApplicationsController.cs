@@ -8,7 +8,7 @@ using DatacomTest.Api.Repositories;
 namespace DatacomTest.Api.Controllers;
 
 [ApiController]
-[Route("api/jobApplications")]
+[Route("api/applications")]
 [Produces(MediaTypeNames.Application.Json)]
 public class JobApplicationsController : ControllerBase {
 	private readonly IJobApplicationRepository _repository;

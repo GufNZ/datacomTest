@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { JobApplication } from '../types/JobApplication';
 
-const API_URL = 'http://localhost:5000/api/applications';
+const API_URL = 'http://localhost:5251/api/applications';
 
 export const api = {
 	getApplications: async () => {

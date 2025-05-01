@@ -13,7 +13,7 @@ datacomTest/
 
 ## Prerequisites
 
-- .NET 8.0 SDK
+- .NET 9.0 SDK
 - Node.js (for frontend development)
 - Yarn (Package Manager)
 
@@ -29,9 +29,9 @@ datacomTest/
    dotnet run
    ```
 
-The backend API will be available at `http://localhost:5000`.
+The backend API will be available at `http://localhost:5251`.
 
-## Frontend Setup (Coming Soon)
+## Frontend Setup
 
 1. Navigate to the frontend directory:
    ```bash
@@ -48,8 +48,6 @@ The backend API will be available at `http://localhost:5000`.
    yarn start
    ```
 
-## Frontend Setup (Coming Soon)
-
 ## Features
 
 - Track job applications with company name, position, status, and application date
@@ -61,20 +59,17 @@ The backend API will be available at `http://localhost:5000`.
 
 - Backend: ASP.NET Core Web API
 - Database: SQLite
-- Frontend: React (coming soon)
+- Frontend: React
 - API Documentation: Swagger UI
 
 ## Development Status
 
 - Backend setup completed
-- Frontend setup pending (Node.js installation required)
+- Frontend setup in progress
 
 ## Next Steps
 
-1. Install Node.js and npm
-2. Set up the React frontend
-3. Implement API endpoints
-4. Create the React UI components
+- Create the React UI components
 
 ## License
 

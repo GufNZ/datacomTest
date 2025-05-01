@@ -31,7 +31,7 @@ Accept: application/json
 %}
 
 ### Get All Job Applications
-GET {{datacomTest.Api_HostAddress}}/api/jobApplications
+GET {{datacomTest.Api_HostAddress}}/api/applications
 Accept: application/json
 
 > {%
@@ -54,7 +54,7 @@ Accept: application/json
 %}
 
 ### Get All Job Applications with Filters
-GET {{datacomTest.Api_HostAddress}}/api/jobApplications?status=Applied&company=Test&position=Developer
+GET {{datacomTest.Api_HostAddress}}/api/applications?status=Applied&company=Test&position=Developer
 Accept: application/json
 
 > {%
@@ -68,7 +68,7 @@ Accept: application/json
 %}
 
 ### Get Specific Job Application
-GET {{datacomTest.Api_HostAddress}}/api/jobApplications/1
+GET {{datacomTest.Api_HostAddress}}/api/applications/1
 Accept: application/json
 
 > {%
@@ -90,7 +90,7 @@ Accept: application/json
 %}
 
 ### Update Existing Job Application
-PUT {{datacomTest.Api_HostAddress}}/api/jobApplications/1
+PUT {{datacomTest.Api_HostAddress}}/api/applications/1
 Content-Type: application/json
 Accept: application/json
 
@@ -121,7 +121,7 @@ Accept: application/json
 %}
 
 ### Delete Job Application
-DELETE {{datacomTest.Api_HostAddress}}/api/jobApplications/1
+DELETE {{datacomTest.Api_HostAddress}}/api/applications/1
 Accept: application/json
 
 > {%
