@@ -1,6 +1,135 @@
 @datacomTest.Api_HostAddress = http://localhost:5251
 
-GET {{datacomTest.Api_HostAddress}}/weatherforecast/
+### Get All Job Applications
+GET {{datacomTest.Api_HostAddress}}/api/jobApplications
 Accept: application/json
 
-###
+> {%
+	client.test('Status is 200 OK', () => {
+		client.assert(response.status === 200, 'Response is not 200!');
+	});
+
+	client.test('Response is JSON array', () => {
+		client.assert(response.body.length !== undefined, 'Response is not an array');
+	});
+
+	client.test('First application has correct properties', () => {
+		const firstApp = response.body[0];
+		client.assert(firstApp.id === 1, 'ID is incorrect');
+		client.assert(firstApp.companyName === 'Example Company', 'Company name is incorrect');
+		client.assert(firstApp.position === 'Software Engineer', 'Position is incorrect');
+		client.assert(firstApp.status === 'Applied', 'Status is incorrect');
+		client.assert(firstApp.dateApplied === '2025-05-01', 'Date applied is incorrect');
+	});
+%}
+
+### Get All Job Applications with Filters
+GET {{datacomTest.Api_HostAddress}}/api/jobApplications?status=Applied&company=Test&position=Developer
+Accept: application/json
+
+> {%
+	client.test('Status is 200 OK', () => {
+		client.assert(response.status === 200, 'Response is not 200!');
+	});
+
+	client.test('Response is JSON array', () => {
+		client.assert(response.body.length !== undefined, 'Response is not an array');
+	});
+%}
+
+### Get Specific Job Application
+GET {{datacomTest.Api_HostAddress}}/api/jobApplications/1
+Accept: application/json
+
+> {%
+	client.test('Status is 200 OK', () => {
+		client.assert(response.status === 200, 'Response is not 200!');
+	});
+
+	client.test('Response is single object', () => {
+		client.assert(typeof(response.body) === 'object', 'Response is not an object');
+	});
+
+	client.test('Application has correct properties', () => {
+		client.assert(response.body.id === 1, 'ID is incorrect');
+		client.assert(response.body.companyName === 'Example Company', 'Company name is incorrect');
+		client.assert(response.body.position === 'Software Engineer', 'Position is incorrect');
+		client.assert(response.body.status === 'Applied', 'Status is incorrect');
+		client.assert(response.body.dateApplied === '2025-05-01', 'Date applied is incorrect');
+	});
+%}
+
+### Create New Job Application
+POST {{datacomTest.Api_HostAddress}}/api/jobApplications
+Content-Type: application/json
+Accept: application/json
+
+{
+	"companyName": "Example Company",
+	"position": "Software Engineer",
+	"status": "Applied",
+	"dateApplied": "2025-05-01"
+}
+
+> {%
+	client.test('Status is 201 Created', () => {
+		client.assert(response.status === 201, 'Response is not 201!');
+	});
+
+	client.test('Response is single object', () => {
+		client.assert(typeof(response.body) === 'object', 'Response is not an object');
+	});
+
+	client.test('Created application has correct properties', () => {
+		client.assert(response.body.id > 0, 'ID is not positive');
+		client.assert(response.body.companyName === 'Example Company', 'Company name is incorrect');
+		client.assert(response.body.position === 'Software Engineer', 'Position is incorrect');
+		client.assert(response.body.status === 'Applied', 'Status is incorrect');
+		client.assert(response.body.dateApplied === '2025-05-01', 'Date applied is incorrect');
+	});
+%}
+
+### Update Existing Job Application
+PUT {{datacomTest.Api_HostAddress}}/api/jobApplications/1
+Content-Type: application/json
+Accept: application/json
+
+{
+	"id": 1,
+	"companyName": "Updated Company",
+	"position": "Senior Software Engineer",
+	"status": "Interview",
+	"dateApplied": "2025-05-01"
+}
+
+> {%
+	client.test('Status is 200 OK', () => {
+		client.assert(response.status === 200, 'Response is not 200!');
+	});
+
+	client.test('Response is single object', () => {
+		client.assert(typeof(response.body) === 'object', 'Response is not an object');
+	});
+
+	client.test('Updated application has correct properties', () => {
+		client.assert(response.body.id === 1, 'ID is incorrect');
+		client.assert(response.body.companyName === 'Updated Company', 'Company name is incorrect');
+		client.assert(response.body.position === 'Senior Software Engineer', 'Position is incorrect');
+		client.assert(response.body.status === 'Interview', 'Status is incorrect');
+		client.assert(response.body.dateApplied === '2025-05-01', 'Date applied is incorrect');
+	});
+%}
+
+### Delete Job Application
+DELETE {{datacomTest.Api_HostAddress}}/api/jobApplications/1
+Accept: application/json
+
+> {%
+	client.test('Status is 204 No Content', () => {
+		client.assert(response.status === 204, 'Response is not 204!');
+	});
+
+	client.test('Response has no body', () => {
+		client.assert(response.body === undefined, 'Response body is not null');
+	});
+%}

@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "datacomTest.Api", "datacomTest.Api\datacomTest.Api.csproj", "{86C4A4C1-7DCA-40C7-BDEF-940DC3DCCDCB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatacomTest.Api.Tests", "DatacomTest.Api.Tests\DatacomTest.Api.Tests.csproj", "{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{86C4A4C1-7DCA-40C7-BDEF-940DC3DCCDCB}.Release|x64.Build.0 = Release|Any CPU
 		{86C4A4C1-7DCA-40C7-BDEF-940DC3DCCDCB}.Release|x86.ActiveCfg = Release|Any CPU
 		{86C4A4C1-7DCA-40C7-BDEF-940DC3DCCDCB}.Release|x86.Build.0 = Release|Any CPU
+		{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}.Debug|x64.Build.0 = Debug|Any CPU
+		{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}.Debug|x86.Build.0 = Debug|Any CPU
+		{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}.Release|x64.ActiveCfg = Release|Any CPU
+		{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}.Release|x64.Build.0 = Release|Any CPU
+		{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}.Release|x86.ActiveCfg = Release|Any CPU
+		{74EBC2C5-CD47-4DC1-8419-5F75538EFDDA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

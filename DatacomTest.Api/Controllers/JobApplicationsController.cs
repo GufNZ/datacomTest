@@ -8,7 +8,7 @@ using DatacomTest.Api.Repositories;
 namespace DatacomTest.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/jobApplications")]
 [Produces(MediaTypeNames.Application.Json)]
 public class JobApplicationsController : ControllerBase {
 	private readonly IJobApplicationRepository _repository;
@@ -19,13 +19,33 @@ public class JobApplicationsController : ControllerBase {
 	}
 
 
-	/// <summary>Get all job applications.</summary>
-	/// <returns>List of jobapplications applications.</returns>
+	/// <summary>Get job applications with optional filtering.</summary>
+	/// <param name="status">Filter by application status (optional)</param>
+	/// <param name="company">Filter by company name (optional)</param>
+	/// <param name="position">Filter by position (optional)</param>
+	/// <returns>List of filtered job applications.</returns>
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<JobApplication>>> GetApplications() {
+	public async Task<ActionResult<IEnumerable<JobApplication>>> GetApplications(
+		[FromQuery] ApplicationStatus? status = null,
+		[FromQuery] string? company = null,
+		[FromQuery] string? position = null
+	) {
 		var applications = await _repository.GetAllAsync();
 
-		return Ok(applications);
+		if (status.HasValue) {
+			applications = applications.Where(a => a.Status == status.Value);
+		}
+
+		if (!string.IsNullOrWhiteSpace(company)) {
+			applications = applications.Where(a => a.CompanyName.Contains(company, StringComparison.OrdinalIgnoreCase));
+		}
+
+		if (!string.IsNullOrWhiteSpace(position)) {
+			applications = applications.Where(a => a.Position.Contains(position, StringComparison.OrdinalIgnoreCase));
+		}
+
+		var filteredApplications = applications.ToList();
+		return Ok(filteredApplications);
 	}
 
 	/// <summary>Get a specific job application by ID.</summary>
