@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Box, Typography } from '@mui/material';
 
-import { JobApplication } from '../types/JobApplication';
+import type { JobApplication } from '../types';
 import { JobApplicationsList } from '../components/JobApplicationsList';
 
 export const Home: React.FC = () => {

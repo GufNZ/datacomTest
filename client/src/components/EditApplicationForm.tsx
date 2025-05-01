@@ -1,20 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
-	Box,
 	Button,
-	TextField,
+	Box,
 	FormControl,
 	InputLabel,
-	Select,
 	MenuItem,
+	Select,
+	TextField,
 	Typography,
 } from '@mui/material';
 
 import { api } from '../services/api';
-import { ApplicationStatus } from '../types/ApplicationStatus';
-import { JobApplication } from '../types/JobApplication';
+import { ApplicationStatus, type JobApplication } from '../types';
 
 interface EditApplicationFormProps {
 	id: string;

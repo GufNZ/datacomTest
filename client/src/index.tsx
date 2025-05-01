@@ -8,7 +8,7 @@ import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(
-	<React.StrictMode>
+	<React.StrictMode>{/*NOTE: this causes double renders in development, particularly on pageLoad.*/}
 		<App/>
 	</React.StrictMode>
 );

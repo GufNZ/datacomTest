@@ -12,7 +12,7 @@ import {
 	Typography,
 } from '@mui/material';
 
-import { ApplicationStatus } from '../types/ApplicationStatus';
+import { ApplicationStatus } from '../types';
 import { api } from '../services/api';
 
 export const AddApplicationForm: React.FC = () => {

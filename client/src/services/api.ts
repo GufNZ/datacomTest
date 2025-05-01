@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-import { ApplicationStatus } from '../types/ApplicationStatus';
-import { JobApplication } from '../types/JobApplication';
-import { SortKey } from '../types/SortKey';
+import { ApplicationStatus, type JobApplication, SortKey } from '../types';
 
 const API_URL = 'http://localhost:5251/api/applications';
 
